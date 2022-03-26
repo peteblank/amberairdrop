@@ -6,7 +6,7 @@ fetch('https://api.scrt.network/cosmos/staking/v1beta1/validators/secretvaloper1
   .then(result => {
     var a=0//count
     for(var i=0;i<result.length;i++){
-      if ((result[i].balance.amount/1000000)>70)//divide by a million because the api shows the amount of uscrt
+      if ((result[i].balance.amount/1000000)>=70)//divide by a million because the api shows the amount of uscrt
       {
         a++
     console.log(result[i].delegation.delegator_address);
