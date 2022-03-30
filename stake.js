@@ -9,14 +9,14 @@ function repeater(z) {
  
   fetch('https://secret-4--lcd--archive.datahub.figment.io/apikey/{apikey}/staking/validators/')
   .then(response => response.json())
-  .then(result2 => console.log("validator: " + result2.result[x].description.moniker))
+  .then(result2 => setTimeout(() => { console.log("validator: " + result2.result[x].description.moniker); },1000))
   fetch('https://secret-4--lcd--archive.datahub.figment.io/apikey/{apikey}/staking/validators?status=BOND_STATUS_BONDED')
     .then(staking => staking.json())
     .then(validator => {
 
       for (var i = 0; i < 70; i++) {
         val[i] = validator.result[i].operator_address;
-        console.log(val[i]);
+        //console.log(val[i]);
       }
       return val[z];
     })
@@ -48,7 +48,7 @@ function sleep(ms) {
 
 for (let b = 0; b < 70; b++) {
   await repeater(b);
-  await sleep(20000);
+  await sleep(25000);
 }
 
 
