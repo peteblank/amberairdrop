@@ -11,3 +11,6 @@ Now all that's left is making it so it sends amber automatically.
 
 #ps
 I'm using two apis from figment so if you want to test it you'll have to go to datahub at figment and get your API key
+
+# update 3
+Added a way to query the amount of testnet amber balance in your wallet
