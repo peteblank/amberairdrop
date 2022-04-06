@@ -16,3 +16,7 @@ Use the instation number you generated, the one I used is for the testnet.
 
 And that's it. Enjoy your new token. Protip: secretcli is VERY picky with the json so if it doesn't work try removing spaces or try double
 checking he quotation marks.
+
+# step 5 You'll also need to set the viewing key so do secretcli tx snip20 set-viewing-key contract_address 'something' 
+# then to see your balance secretcli q snip20 balance [contract address] [account] [viewing_key] --from 'mykey'
+If you ever need help with secretcli type secretcli -h 
