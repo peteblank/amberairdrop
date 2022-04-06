@@ -9,7 +9,7 @@ dotenv.config();
   var x=0 //iterations
   var apikey='';//your figment api key
   var viewingkey='';//set with secretcli tx snip20 set-viewing-key
-  var gasamount=50000 //defaults to 0.05 secrets
+  var gasamount="50000" //defaults to 0.05 secrets
   var contract='secret1znrrrn692xnrn94sckgd9keuq7m3nm2awmpquv';//contract address, this one is for testnet tamberine
   var val=new Array();
   var valamount=2;//the amount of validators, on the testnet there are 2
