@@ -1,0 +1,170 @@
+import fetch from "node-fetch";
+import { EnigmaUtils, Secp256k1Pen, SigningCosmWasmClient, pubkeyToAddress, encodeSecp256k1Pubkey, unmarshalTx } from "secretjs";
+import dotenv from "dotenv"
+dotenv.config();
+  // Load environment variables
+  var address=new Array();//array that stores addresses
+  var amount2=new Array();//array that stores amounts
+  var a = 0; //count
+  var x=0 //iterations
+  var apikey='';//your figment api key
+  var viewingkey='';//set with secretcli tx snip20 set-viewing-key
+  var gasamount=50000 //defaults to 0.05 secrets
+  var contract='secret1znrrrn692xnrn94sckgd9keuq7m3nm2awmpquv';//contract address, this one is for testnet tamberine
+  var val=new Array();
+  var valamount=2;//the amount of validators, on the testnet there are 2
+  
+  const customFees = {
+    upload: {
+        amount: [{ amount: "2000000", denom: "uscrt" }],
+        gas: "2000000",
+    },
+    init: {
+        amount: [{ amount: "500000", denom: "uscrt" }],
+        gas: "500000",
+    },
+    exec: {
+        amount: [{ amount: gasamount, denom: gasamount }],
+        gas: gasamount,
+    },
+    send: {
+      amount: [{ amount: gasamount, denom: gasamount }],
+      gas: gasamount,
+  },
+  }
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));//makes the code wait for execution
+  }
+/*
+get the api from figment for full lcd mainnet if you want to use the mainnet api
+for example https://secret-4--lcd--archive.datahub.figment.io/apikey/{apikey}/validators/
+*/
+async function repeater(z) {
+  sleep(2000);//sleep 2 seconds
+  fetch(`https://secret-pulsar-2--lcd--full.datahub.figment.io/apikey/${apikey}/staking/validators`)
+  .then(response => response.json())
+  .then(result2 => console.log("validator: " + result2.result[x].description.moniker))
+  fetch(`https://secret-pulsar-2--lcd--full.datahub.figment.io/apikey/${apikey}/staking/validators?status=BOND_STATUS_BONDED`)
+    .then(staking => staking.json())
+    .then(validator => {
+      var i=0
+      for (var i = 0; i <valamount ; i++) {
+        val[i] = validator.result[i].operator_address;//stores validators addresses like secretvaloper1...
+          //file written successfully
+        //console.log(val[i]);
+      }
+      return val[z];//returns validators addresses
+    
+    })
+
+
+    .then(values =>
+    fetch(`https://secret-pulsar-2--lcd--full.datahub.figment.io/apikey/{apikey}/staking/validators/${values}/delegations?pagination.limit=100000`))//values=validators addresses
+    .then(response => response.json())
+    .then(result =>  {
+      async function main(values) {
+       
+        const httpUrl = process.env.SECRET_REST_URL;
+    
+        // Use key created in tutorial #2
+        const mnemonic = process.env.MNEMONIC;
+    
+        // A pen is the most basic tool you can think of for signing.
+        // This wraps a single keypair and allows for signing.
+        const signingPen = await Secp256k1Pen.fromMnemonic(mnemonic);
+    
+        // Get the public key
+        const pubkey = encodeSecp256k1Pubkey(signingPen.pubkey);
+    
+        // get the wallet address
+        const accAddress = pubkeyToAddress(pubkey, 'secret');
+    
+        const txEncryptionSeed = EnigmaUtils.GenerateNewSeed();
+    
+        const client = new SigningCosmWasmClient(
+          httpUrl,
+          accAddress,
+          (signBytes) => signingPen.sign(signBytes),
+          txEncryptionSeed, customFees
+        );
+        console.log(`Wallet address=${accAddress}`);
+    
+        // Upload the wasm of a simple contract
+        // Get the code ID from the receipt
+        // Create an instance of the token contract, minting some tokens to our wallet
+        // Entropy: Secure implementation is left to the client, but it is recommended to use base-64 encoded random bytes and not predictable inputs.
+        var contractAddress = contract;//
+        const secretkey = viewingkey; //set your own viewing key 
+    
+    
+    
+    
+    
+        // Convert the UTF8 bytes to String, before parsing the JSON for the api key.
+        // Query balance with the api key
+        const balanceQuery = {
+          balance: {
+            key: secretkey,
+            address: accAddress
+          }
+        };
+        let balance = await client.queryContractSmart(contractAddress, balanceQuery);
+    
+        console.log('My token balance: ', balance);
+        balance = await client.queryContractSmart(contractAddress, balanceQuery);
+        console.log('New token balance', balance);
+    
+        var handleMsg = {
+          transfer: {
+            owner: accAddress, amount: "1", recipient: result.result[[values]].delegation.delegator_address //the amount and wallet values will be passed down to here
+          }
+        };
+        var response = "";
+        console.log('Transferring tokens');
+        response = await client.execute(contractAddress, handleMsg);
+        console.log('Transfer response: ', response);
+    
+        balance = await client.queryContractSmart(contractAddress, balanceQuery);
+        console.log('New token balance', balance);
+        
+    }
+      const sleep = (time) => {
+        return new Promise((resolve) => setTimeout(resolve, time))
+      }
+      var rows=Object.keys(result.result).length;
+      /*
+      if result.result[i]... gives errors replace result[i] with result.delegation_responses[i]... might be a tesnet/mainnet thing
+      */
+      async function doSomething(){
+      for (var i = 0; i < rows ; i++) {
+        if ((result.result[i].balance.amount / 1000000) >= 70){ //divide by a million because the api shows the amount of uscrt
+         console.log("rows:"+rows)
+         
+          address[i]=result.result[i].delegation.delegator_address;
+          amount2[i]=result.result[i].balance.amount / 1000000
+          console.log(address[i]);
+          console.log(amount2[i]);
+          console.log("count: "+a);
+          main(a);
+          await sleep(20000)
+          a++;
+        }  
+     
+        }
+        x++;
+        console.log("iterations: "+x)
+      }
+      doSomething()
+ })
+
+       }
+       
+//I got this bit below thanks to some random anon
+ 
+for (var i=0;i<valamount;i++)
+{  
+  await repeater(x);
+  await sleep(20000);//sleep 20 seconds might need to increase it
+}
+
+    
